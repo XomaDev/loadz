@@ -1,13 +1,14 @@
 package xyz.kumaraswamy.loadz;
 
-import android.app.Activity;
-import android.util.Log;
-
 import com.google.appinventor.components.annotations.SimpleFunction;
 import com.google.appinventor.components.runtime.AndroidNonvisibleComponent;
+import com.google.appinventor.components.runtime.Component;
 import com.google.appinventor.components.runtime.ComponentContainer;
+import com.google.appinventor.components.runtime.errors.YailRuntimeError;
 import com.google.appinventor.components.runtime.util.YailList;
-import dalvik.system.DexClassLoader;
+
+import android.app.Activity;
+import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,8 +19,11 @@ public class Loadz extends AndroidNonvisibleComponent {
     private static final String TAG = "Loadz";
     private final Activity activity;
 
+    private final ComponentContainer container;
+
     public Loadz(ComponentContainer container) {
         super(container.$form());
+        this.container = container;
         activity = container.$context();
     }
 
@@ -57,10 +61,30 @@ public class Loadz extends AndroidNonvisibleComponent {
 
     @SimpleFunction(description = "Loads class from JAR")
     public Object Load(final String name, final String className) throws Exception {
-        final Class<?> myClass = new DexClassLoader(name, "/data/data/" + activity.getPackageName() +
-                "/", null, getClass().getClassLoader()).loadClass(className);
-        Log.d(TAG, "LoadJAR: Loaded class name " + myClass.getName());
-        return myClass.newInstance();
+        final Class<?> myCLass = load(name, className);
+        Log.d(TAG, "LoadJAR: Loaded class name " + myCLass.getName());
+        return myCLass.newInstance();
+    }
+
+    @SimpleFunction(description = "Loads extension from JAR")
+    public Component LoadExtension(final String name, final String className) throws Exception {
+        final Class<?> myClass = load(name, className);
+        final Component component;
+        try {
+            component = (Component) myClass.getConstructor(ComponentContainer.class).newInstance(container);
+        } catch (ClassCastException exception) {
+            throw new YailRuntimeError("Expected a component!", TAG);
+        }
+        return component;
+    }
+
+    private Class<?> load(final String name, final String className) throws Exception {
+        final Object dexLoader = Class.forName("dalvik.system.DexClassLoader").getConstructor(String.class, String.class,
+                        String.class, ClassLoader.class)
+                .newInstance(name, "/data/data/" + activity.getPackageName() +
+                        "/", null, getClass().getClassLoader());
+        return (Class<?>) getMethod(dexLoader.getClass().getMethods(), "loadClass", 1)
+                .invoke(dexLoader, className);
     }
 
     public Method getMethod(Method[] methods, String name, int parameterCount) {

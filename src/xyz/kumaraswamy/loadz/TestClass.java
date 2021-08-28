@@ -12,7 +12,7 @@ public class TestClass {
         Log.d(TAG, "print: " + message);
     }
 
-    public void toast(Activity activity, final String message) {
+    public static void toast(Activity activity, final String message) {
         Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
     }
 }
