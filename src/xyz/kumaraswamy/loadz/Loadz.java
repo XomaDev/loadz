@@ -133,7 +133,7 @@ public class Loadz extends AndroidNonvisibleComponent {
         }
         final Field form = component.getClass().getSuperclass().getDeclaredField("form");
         form.setAccessible(true);
-        form.set(component, new FForm(activity, this));
+        form.set(component, new FForm(activity, this, component));
     }
 
     @SimpleEvent(
@@ -154,7 +154,7 @@ public class Loadz extends AndroidNonvisibleComponent {
             description =
                     "One of the injected component requested for permission"
     )
-    public void PermissionRequest(final String permission) {
-        EventDispatcher.dispatchEvent(this, "PermissionRequest", permission);
+    public void PermissionRequest(final Component component, final String permission) {
+        EventDispatcher.dispatchEvent(this, "PermissionRequest", component, permission);
     }
 }

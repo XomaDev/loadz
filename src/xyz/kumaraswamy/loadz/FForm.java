@@ -14,13 +14,15 @@ import java.util.Arrays;
 public class FForm extends ReplForm {
     private static final String TAG = "FForm";
     private final Loadz loadz;
+    private final Component component;
 
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
     }
 
-    public FForm(Context context, Loadz loadz) {
+    public FForm(Context context, Loadz loadz, Component component) {
+        this.component = component;
         attachBaseContext(context);
         this.loadz = loadz;
     }
@@ -47,7 +49,7 @@ public class FForm extends ReplForm {
     @Override
     public void askPermission(final String permission, final PermissionResultHandler responseRequestor) {
         Log.d(TAG, "askPermission: Permission needed of name " + permission);
-        loadz.PermissionRequest(permission);
+        loadz.PermissionRequest(component, permission);
     }
 
     @Override
